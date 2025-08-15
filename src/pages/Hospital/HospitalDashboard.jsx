@@ -36,10 +36,10 @@ const HospitalDashboard = () => {
   }, []);
 
   return (
-    <div className="p-4 md:p-6 overflow-y-auto">
+    <div className="">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+        <h1 className="text-2xl md:text-3xl font-bold text-red-700">
           Hospital Dashboard
         </h1>
         <div className="flex items-center space-x-4 text-gray-600 relative">

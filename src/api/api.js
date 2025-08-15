@@ -71,3 +71,43 @@ export const fetchDonors = async () => {
     throw error;
   }
 };
+
+export const addDonor = async (donorData) => {
+  try {
+    const response = await axiosInstance.post("/donor/addDonor", donorData);
+    console.log("Add Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const updateDonor = async (id, data) => {
+  try {
+    // Ensure amount is a number
+    const updatedData = { ...data, amount: Number(data.amount) };
+    console.log("Updated data: ", updatedData);
+    console.log("type of amount: ",typeof(updatedData.amount))
+    const response = await axiosInstance.put(
+      `/donor/updateDonor/${id}`,
+      updatedData
+    );
+
+    console.log("Update Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const deleteDonor = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/donor/deleteDonor/${id}`);
+    console.log("Delete Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

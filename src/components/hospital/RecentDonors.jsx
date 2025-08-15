@@ -19,9 +19,9 @@ const RecentDonors = ({ donors = [], loading, error }) => {
             <thead>
               <tr className="text-gray-500 text-left">
                 <th className="pb-3 px-3">Name</th>
-                <th className="pb-3 px-3">Address</th>
+                <th className="pb-3 px-3">Amount(Units)</th>
                 <th className="pb-3 px-3">Phone</th>
-                <th className="pb-3 px-3">Group</th>
+                <th className="pb-3 px-3">Blood Group</th>
               </tr>
             </thead>
             <tbody>
@@ -36,14 +36,14 @@ const RecentDonors = ({ donors = [], loading, error }) => {
                     {donor.name || donor[0]}
                   </td>
                   <td className="py-3 px-3 text-gray-600">
-                    {donor.address || donor[1]}
+                    {donor.amount || donor[1]}
                   </td>
                   <td className="py-3 px-3 text-gray-600">
                     {donor.phone || donor[2]}
                   </td>
                   <td className="py-3 px-3">
                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-100 text-red-700">
-                      {donor.group || donor[3]}
+                      {donor.bloodType || donor[3]}
                     </span>
                   </td>
                 </tr>

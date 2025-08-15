@@ -1,13 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 const Login = () => {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
+  const [form, setForm] = useState({ email: "", password: "" });
   const [submitted, setSubmitted] = useState(false);
+  const canvasRef = useRef(null);
 
+  // Handle Input
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -16,19 +14,132 @@ const Login = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitted(true);
-    // API call here if needed
   };
 
+  // Star animation
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    let stars = [];
+    let particles = [];
+    let animationId;
+
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Star object
+    class Star {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = Math.random() * 1.5;
+        this.speed = Math.random() * 0.5 + 0.2;
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+      }
+      update() {
+        this.y += this.speed;
+        if (this.y > canvas.height) {
+          this.x = Math.random() * canvas.width;
+          this.y = 0;
+        }
+        this.draw();
+      }
+    }
+
+    // Particle from explosion
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.radius = Math.random() * 2 + 1;
+        this.color = "white";
+        this.speedX = (Math.random() - 0.5) * 3;
+        this.speedY = (Math.random() - 0.5) * 3;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.02 + 0.01;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = this.alpha;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= this.decay;
+      }
+    }
+
+    // Create base stars
+    for (let i = 0; i < 150; i++) {
+      stars.push(new Star());
+    }
+
+    // Create explosion
+    const createExplosion = () => {
+      const x = Math.random() * canvas.width;
+      const y = Math.random() * (canvas.height / 2);
+      for (let i = 0; i < 50; i++) {
+        particles.push(new Particle(x, y));
+      }
+    };
+
+    // Trigger explosion every few seconds
+    setInterval(createExplosion, 3000);
+
+    // Animation loop
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      stars.forEach((star) => star.update());
+
+      particles.forEach((p, i) => {
+        p.update();
+        p.draw();
+        if (p.alpha <= 0) particles.splice(i, 1);
+      });
+
+      animationId = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(animationId);
+      window.removeEventListener("resize", resizeCanvas);
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ffeaea] via-[#fff] to-[#fbe6e6] px-4">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-black">
+      {/* Animated Starfield */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 z-0"
+        style={{ display: "block" }}
+      ></canvas>
+
+      {/* Login Card */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white/90 backdrop-blur-md px-8 py-10 rounded-2xl shadow-lg w-full max-w-md border border-[#e53935]/20
-                   transform transition-all duration-500 hover:shadow-2xl animate-fadeIn"
+        className="relative z-10 bg-white shadow-xl border border-[#f3dcdc] rounded-3xl px-10 py-4 w-full max-w-md 
+                   transition-transform duration-300 hover:scale-[1.01] backdrop-blur-md bg-opacity-95"
       >
-        {/* Header */}
-        <div className="flex items-center justify-center mb-8">
-          <span className="bg-gradient-to-tr from-[#e53935] to-[#ff6b6b] rounded-full w-14 h-14 flex items-center justify-center mr-3 shadow-lg">
+        <div className="flex flex-col items-center mb-10">
+          <div className="bg-gradient-to-tr from-[#e53935] to-[#ff6b6b] rounded-full w-16 h-16 flex items-center justify-center shadow-md">
             <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
               <path
                 fill="#fff"
@@ -40,17 +151,15 @@ const Login = () => {
                    1.94-3.5 3.22-6 3.22z"
               />
             </svg>
-          </span>
-          <h2 className="font-extrabold text-3xl text-[#e53935]">Login</h2>
+          </div>
+          <h2 className="text-3xl font-bold text-[#e53935] mt-4">Login</h2>
+          <p className="text-gray-500 mt-1 text-sm">Welcome back! Please enter your details</p>
         </div>
 
         {/* Email */}
         <div className="mb-6">
-          <label
-            htmlFor="email"
-            className="block mb-2 font-medium text-gray-700"
-          >
-            Email
+          <label htmlFor="email" className="block mb-2 text-gray-700 font-medium">
+            Email Address
           </label>
           <input
             type="email"
@@ -60,18 +169,16 @@ const Login = () => {
             onChange={handleChange}
             required
             autoComplete="email"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 
+            placeholder="you@example.com"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50
                        focus:outline-none focus:border-[#e53935] focus:ring-2 
-                       focus:ring-[#e53935]/40 text-base transition-all duration-300"
+                       focus:ring-[#e53935]/30 transition-all duration-200"
           />
         </div>
 
         {/* Password */}
-        <div className="mb-6">
-          <label
-            htmlFor="password"
-            className="block mb-2 font-medium text-gray-700"
-          >
+        <div className="mb-8">
+          <label htmlFor="password" className="block mb-2 text-gray-700 font-medium">
             Password
           </label>
           <input
@@ -82,9 +189,10 @@ const Login = () => {
             onChange={handleChange}
             required
             autoComplete="current-password"
-            className="w-full px-4 py-3 rounded-lg border border-gray-200 
+            placeholder="••••••••"
+            className="w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50
                        focus:outline-none focus:border-[#e53935] focus:ring-2 
-                       focus:ring-[#e53935]/40 text-base transition-all duration-300"
+                       focus:ring-[#e53935]/30 transition-all duration-200"
           />
         </div>
 
@@ -92,36 +200,18 @@ const Login = () => {
         <button
           type="submit"
           className="w-full py-3 bg-gradient-to-r from-[#e53935] to-[#ff6b6b] 
-                     text-white rounded-lg font-bold text-lg shadow-md 
-                     transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-95"
+                     text-white rounded-lg font-semibold text-lg shadow-md 
+                     hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200"
         >
           Login
         </button>
 
-        {/* Success Message */}
         {submitted && (
-          <div className="mt-6 text-[#e53935] text-center font-semibold animate-fadeIn">
+          <div className="mt-6 text-[#e53935] text-center font-medium animate-fadeIn">
             ✅ Login submitted!
           </div>
         )}
       </form>
-
-      {/* Animation */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };

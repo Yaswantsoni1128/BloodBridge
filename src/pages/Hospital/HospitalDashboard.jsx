@@ -6,12 +6,14 @@ import RecentDonors from "../../components/hospital/RecentDonors";
 import CurrentStockCard from "../../components/hospital/CurrentStockCard";
 import UserProfilePopup from "../../components/hospital/UserProfilePopup";
 import { fetchRecentDonors } from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
 const HospitalDashboard = () => {
   const [recentDonors, setRecentDonors] = useState([]);
   const [loadingDonors, setLoadingDonors] = useState(true);
   const [errorDonors, setErrorDonors] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const getDonors = async () => {
@@ -35,6 +37,11 @@ const HospitalDashboard = () => {
     getDonors();
   }, []);
 
+  const goToAlert = () => {
+    // Navigate to the alerts page
+    navigate("/hospital/alerts");
+  };
+
   return (
     <div className="">
       {/* Header */}
@@ -43,7 +50,8 @@ const HospitalDashboard = () => {
           Hospital Dashboard
         </h1>
         <div className="flex items-center space-x-4 text-gray-600 relative">
-          <FiBell className="text-xl md:text-2xl cursor-pointer hover:text-red-500 transition" />
+          <FiBell className="text-xl md:text-2xl cursor-pointer hover:text-red-500 transition" 
+          onClick={goToAlert}/>
           <div className="relative">
             <FiUser
               className="text-xl md:text-2xl cursor-pointer hover:text-red-500 transition"
@@ -57,10 +65,10 @@ const HospitalDashboard = () => {
       </div>
 
       {/* Blood Type Stats */}
-      <BloodStats />
+      {/* <BloodStats /> */}
 
       {/* Donors & Stock */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+      <div className="w-full px-2">
         <div className="lg:col-span-2">
           <RecentDonors
             donors={recentDonors}
@@ -68,7 +76,7 @@ const HospitalDashboard = () => {
             error={errorDonors}
           />
         </div>
-        <CurrentStockCard />
+        {/* <CurrentStockCard /> */}
       </div>
     </div>
   );

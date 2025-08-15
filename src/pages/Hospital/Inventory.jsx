@@ -50,11 +50,13 @@ const Inventory = () => {
     const newUnits = selectedInventory.currentUnits - used;
 
     try {
+      console.log("selectedInventory:", selectedInventory);
       await updateInventoryUnits(
         selectedInventory.id,
         selectedInventory.bloodType,
         newUnits
       );
+      
       setShowUpdateModal(false);
       setUsedUnits("");
       setMessage({
@@ -144,8 +146,9 @@ const Inventory = () => {
                   <td className="py-3 px-4">
                     <button
                       onClick={() => {
+                        console.log("Selected Inventory in btn:", item);
                         setSelectedInventory({
-                          id: item.inventoryDetails[0]._id,
+                          id: item?._id,
                           bloodType: item.bloodType,
                           currentUnits: item.unitsAvailable,
                         });

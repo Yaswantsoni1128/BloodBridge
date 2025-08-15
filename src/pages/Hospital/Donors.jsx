@@ -1,126 +1,175 @@
-// Donors.jsx (keep all logic, but remove HospitalSideBar wrapper)
+// Donors.jsx
 import React, { useState, useEffect } from "react";
-import { fetchDonors } from "../../api/api";
+import {
+  fetchDonors,
+  addDonor,
+  updateDonor,
+  deleteDonor,
+} from "../../api/api";
+import DonorSearchBar from "../../components/Hospital/DonorSearchBar";
+import DonorTable from "../../components/Hospital/DonorTable";
+import DonorModal from "../../components/Hospital/DonorModal";
+import DonorViewModal from "../../components/Hospital/DonorViewModal";
 
 const Donors = () => {
   const [donors, setDonors] = useState([]);
   const [filteredDonors, setFilteredDonors] = useState([]);
   const [searchName, setSearchName] = useState("");
   const [searchGroup, setSearchGroup] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [editDonor, setEditDonor] = useState(null);
+  const [viewDonor, setViewDonor] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    amount: "",
+    bloodType: "",
+    requestId: "",
+  });
 
   const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
   useEffect(() => {
     const getDonors = async () => {
+      setLoading(true);
       try {
-        const response = await fetchDonors();
-        const donorList = Array.isArray(response.data) ? response.data : [];
-        setDonors(donorList);
-        setFilteredDonors(donorList);
-      } catch (error) {
-        console.error("Error fetching donors:", error);
+        const res = await fetchDonors();
+        setDonors(res.data || []);
+        setFilteredDonors(res.data || []);
+      } catch {
+        setError("Failed to load donors.");
+      } finally {
+        setLoading(false);
       }
     };
     getDonors();
   }, []);
 
   useEffect(() => {
-    const results = donors.filter((donor) => {
-      const nameMatch = donor.name
-        .toLowerCase()
-        .includes(searchName.toLowerCase());
-      const groupMatch = searchGroup
-        ? donor.bloodType.toLowerCase() === searchGroup.toLowerCase()
-        : true;
-      return nameMatch && groupMatch;
-    });
-    setFilteredDonors(results);
+    setFilteredDonors(
+      donors.filter(
+        (d) =>
+          (d?.name || "")
+            .toLowerCase()
+            .includes((searchName || "").toLowerCase()) &&
+          (searchGroup ? d?.bloodType === searchGroup : true)
+      )
+    );
   }, [searchName, searchGroup, donors]);
+
+  const openModal = (donor = null) => {
+    setEditDonor(donor);
+    setFormData(
+      donor || {
+        name: "",
+        email: "",
+        phone: "",
+        amount: "",
+        bloodType: "",
+        requestId: "",
+      }
+    );
+    setIsModalOpen(true);
+  };
+
+  const handleView = (donor) => {
+    setViewDonor(donor);
+    setIsViewModalOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this donor?")) return;
+    try {
+      await deleteDonor(id);
+      setDonors((prev) => prev.filter((d) => d._id !== id));
+      setIsViewModalOpen(false);
+    } catch {
+      setError("Failed to delete donor.");
+    }
+  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setFormLoading(true);
+  try {
+    if (editDonor) {
+      const res = await updateDonor(editDonor._id, formData);
+      if (res.status === 200) {
+        setDonors((prev) =>
+          prev.map((d) =>
+            d._id === editDonor._id ? { ...d, ...formData } : d
+          )
+        );
+      }
+    } else {
+      await addDonor(formData);
+      // Reload all donors after adding a new one
+      const res = await fetchDonors();
+      setDonors(res.data || []);
+    }
+    setIsModalOpen(false);
+  } catch {
+    setError("Failed to save donor.");
+  } finally {
+    setFormLoading(false);
+  }
+};
+
 
   return (
     <>
-      <h2 className="font-bold text-2xl text-gray-800 mb-6 border-b-2 border-red-500 pb-2">
+      <h2 className="font-bold text-2xl text-red-700 mb-6 border-b-2 border-red-500 pb-2">
         Donors
       </h2>
-
-      {/* Search + Add Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-          <input
-            type="text"
-            placeholder="Search by Name"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 w-full sm:w-64"
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {loading ? (
+        <p className="text-gray-500">Loading donors...</p>
+      ) : (
+        <>
+          <DonorSearchBar
+            searchName={searchName}
+            setSearchName={setSearchName}
+            searchGroup={searchGroup}
+            setSearchGroup={setSearchGroup}
+            bloodGroups={bloodGroups}
+            onAddClick={() => openModal()}
           />
+          <DonorTable
+            donors={filteredDonors}
+            onEdit={openModal}
+            onView={handleView}
+          />
+        </>
+      )}
 
-          <select
-            value={searchGroup}
-            onChange={(e) => setSearchGroup(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-400 w-full sm:w-48"
-          >
-            <option value="">All Blood Groups</option>
-            {bloodGroups.map((group) => (
-              <option key={group} value={group}>
-                {group}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Add / Edit Modal */}
+      <DonorModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        formData={formData}
+        setFormData={setFormData}
+        onSubmit={handleSubmit}
+        loading={formLoading}
+        editDonor={editDonor}
+        bloodGroups={bloodGroups}
+      />
 
-        <button
-          onClick={() => alert("Open Add Donor Modal")}
-          className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg shadow transition duration-200"
-        >
-          + Add Donor
-        </button>
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto rounded-xl shadow-lg">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-red-500 text-white">
-              <th className="py-3 px-4">Name</th>
-              <th className="py-3 px-4">Email</th>
-              <th className="py-3 px-4">Phone</th>
-              <th className="py-3 px-4">Blood Group</th>
-              <th className="py-3 px-4">Amount (Units)</th>
-              <th className="py-3 px-4">Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDonors.length > 0 ? (
-              filteredDonors.map((donor, idx) => (
-                <tr
-                  key={donor._id}
-                  className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}
-                >
-                  <td className="py-3 px-4 font-medium">{donor.name}</td>
-                  <td className="py-3 px-4">{donor.email}</td>
-                  <td className="py-3 px-4">{donor.phone}</td>
-                  <td className="py-3 px-4 font-semibold text-red-600">
-                    {donor.bloodType}
-                  </td>
-                  <td className="py-3 px-4">{donor.amount}</td>
-                  <td className="py-3 px-4">
-                    {new Date(donor.createdAt).toLocaleDateString()}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-4 text-gray-500 italic"
-                >
-                  No donors found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* View Modal */}
+      <DonorViewModal
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        donor={viewDonor}
+        onEdit={(d) => {
+          setIsViewModalOpen(false);
+          openModal(d);
+        }}
+        onDelete={handleDelete}
+      />
     </>
   );
 };

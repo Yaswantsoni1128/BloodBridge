@@ -72,6 +72,7 @@ export const fetchDonors = async () => {
   }
 };
 
+
 // ✅ Fetch hospital inventory
 export const fetchHospitalInventory = async () => {
   const token = localStorage.getItem("token"); // get JWT
@@ -83,7 +84,6 @@ export const fetchHospitalInventory = async () => {
 };
 
 // ✅ Update inventory units
-// api.js
 export const updateInventoryUnits = async (id, bloodType, newUnits) => {
   const token = localStorage.getItem("token");
   return await axios.put(
@@ -97,3 +97,42 @@ export const updateInventoryUnits = async (id, bloodType, newUnits) => {
   );
 };
 
+export const addDonor = async (donorData) => {
+  try {
+    const response = await axiosInstance.post("/donor/addDonor", donorData);
+    console.log("Add Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const updateDonor = async (id, data) => {
+  try {
+    // Ensure amount is a number
+    const updatedData = { ...data, amount: Number(data.amount) };
+    console.log("Updated data: ", updatedData);
+    console.log("type of amount: ",typeof(updatedData.amount))
+    const response = await axiosInstance.put(
+      `/donor/updateDonor/${id}`,
+      updatedData
+    );
+
+    console.log("Update Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+
+export const deleteDonor = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/donor/deleteDonor/${id}`);
+    console.log("Delete Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

@@ -1,16 +1,27 @@
 import React, { useEffect, useState } from "react";
-import { fetchHospitalInventory, updateInventoryUnits } from "../../api/api.js";
+import {
+  fetchHospitalInventory,
+  updateInventoryUnits,
+  createInventory,
+} from "../../api/api.js";
+import InventoryModal from "../../components/hospital/InventoryModal.jsx";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [selectedInventory, setSelectedInventory] = useState(null);
   const [usedUnits, setUsedUnits] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [formData, setFormData] = useState({
+    bloodType: "",
+    unitsAvailable: "",
+  });
+  const [message, setMessage] = useState({ text: "", type: "" }); // success/error message
 
+  const bloodGroups = ["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"];
 
-
-  // Fetch hospital inventory on load
   useEffect(() => {
     getInventory();
   }, []);
@@ -21,107 +32,157 @@ const Inventory = () => {
       const { data } = await fetchHospitalInventory();
       setInventory(data.inventory || []);
     } catch (error) {
-      console.error("Error fetching inventory:", error);
+      setMessage({ text: "Error fetching inventory", type: "error" });
     } finally {
       setLoading(false);
     }
   };
 
-  // Update units after usage
-  const handleModalSubmit = async () => {
-    if (!usedUnits || isNaN(usedUnits)) {
-      alert("Please enter a valid number");
-      return;
-    }
+  const filteredInventory = inventory.filter((item) =>
+    item.bloodType.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
+  const handleUpdateSubmit = async () => {
+    if (!usedUnits || isNaN(usedUnits)) return;
     const used = parseInt(usedUnits, 10);
-    if (used <= 0) return alert("Used units must be greater than 0");
-    if (used > selectedInventory.currentUnits) return alert("Used units cannot exceed available units");
+    if (used <= 0 || used > selectedInventory.currentUnits) return;
 
     const newUnits = selectedInventory.currentUnits - used;
 
     try {
-      await updateInventoryUnits(selectedInventory.id, selectedInventory.bloodType, newUnits);
-      alert(`Inventory updated successfully! Remaining units: ${newUnits}`);
-      setShowModal(false);
+      await updateInventoryUnits(
+        selectedInventory.id,
+        selectedInventory.bloodType,
+        newUnits
+      );
+      setShowUpdateModal(false);
       setUsedUnits("");
+      setMessage({
+        text: `Inventory updated! Remaining units: ${newUnits}`,
+        type: "success",
+      });
       getInventory();
     } catch (error) {
-      console.error("Error updating inventory:", error);
-      alert("Failed to update inventory");
+      setMessage({ text: "Failed to update inventory", type: "error" });
     }
   };
 
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.bloodType || !formData.unitsAvailable) return;
 
-
-  if (loading) {
-    return <p className="text-center text-gray-600">Loading inventory...</p>;
-  }
-  console.log("ALL INVENTORIES: ", inventory);
+    try {
+      await createInventory(formData);
+      setShowAddModal(false);
+      setFormData({ bloodType: "", unitsAvailable: "" });
+      setMessage({ text: "Inventory added successfully!", type: "success" });
+      getInventory();
+    } catch (error) {
+      setMessage({ text: "Failed to add inventory", type: "error" });
+    }
+  };
 
   return (
-    <>
-      <div className="p-5">
-  <h2 className="font-semibold text-lg text-red-700 mb-5 border-b pb-2">Inventory</h2>
+    <div className="p-5 max-w-7xl mx-auto">
+      <h2 className="font-bold text-2xl text-red-700 mb-5 border-b pb-2">
+        Inventory
+      </h2>
 
-  {inventory.length > 0 ? (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white rounded-xl shadow-md border border-red-200">
-        <thead>
-          <tr className="bg-red-600 text-white">
-            <th className="py-3 px-4 text-center rounded-tl-xl">Blood Group</th>
-            <th className="py-3 px-4 text-center">Current Units</th>
-            <th className="py-3 px-4 text-center">Last Updated</th>
-            <th className="py-3 px-4 text-center rounded-tr-xl">Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {inventory.map((item) => (
-            <tr key={item._id} className="border-b hover:bg-gray-50 text-center">
-              <td className="py-3 px-4 font-bold text-red-700">{item.bloodType}</td>
-              <td className="py-3 px-4">{item.unitsAvailable}</td>
-              <td className="py-3 px-4">
-                {new Date(item.inventoryDetails[0].lastUpdated).toLocaleDateString('en-GB', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}
-              </td>
-              <td className="py-3 px-4">
-                <button
-                  onClick={() => {
-                    setSelectedInventory({
-                      id: item.inventoryDetails[0]._id,
-                      bloodType: item.bloodType,
-                      currentUnits: item.unitsAvailable,
-                    });
-                    setShowModal(true);
-                  }}
-                  className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
-                >
-                  Update
-                </button>
-              </td>
+
+      {/* Search + Add button */}
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
+        <input
+          type="text"
+          placeholder="Search by blood group"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border border-gray-300 rounded-md p-2 w-full sm:w-1/2 focus:outline-none focus:ring-2 focus:ring-red-400"
+        />
+        <button
+          className="bg-red-700 text-white px-4 py-2 rounded-md hover:bg-red-800 transition w-full sm:w-auto"
+          onClick={() => setShowAddModal(true)}
+        >
+          Add Inventory
+        </button>
+      </div>
+
+      {/* Inventory Table */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white rounded-xl shadow-md border border-red-200">
+          <thead>
+            <tr className="bg-red-600 text-white">
+              <th className="py-3 px-4 text-center rounded-tl-xl">
+                Blood Group
+              </th>
+              <th className="py-3 px-4 text-center">Current Units</th>
+              <th className="py-3 px-4 text-center">Last Updated</th>
+              <th className="py-3 px-4 text-center rounded-tr-xl">Action</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  ) : (
-    <p className="text-gray-600">No inventory found for this hospital.</p>
-  )}
-</div>
+          </thead>
+          <tbody>
+            {filteredInventory.length > 0 ? (
+              filteredInventory.map((item) => (
+                <tr
+                  key={item._id}
+                  className="border-b hover:bg-gray-50 text-center"
+                >
+                  <td className="py-3 px-4 font-bold text-red-700">
+                    {item.bloodType}
+                  </td>
+                  <td className="py-3 px-4">{item.unitsAvailable}</td>
+                  <td className="py-3 px-4">
+                    {item.inventoryDetails && item.inventoryDetails.length > 0
+                      ? new Date(
+                          item.inventoryDetails[0].lastUpdated
+                        ).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "N/A"}
+                  </td>
+                  <td className="py-3 px-4">
+                    <button
+                      onClick={() => {
+                        setSelectedInventory({
+                          id: item.inventoryDetails[0]._id,
+                          bloodType: item.bloodType,
+                          currentUnits: item.unitsAvailable,
+                        });
+                        setShowUpdateModal(true);
+                      }}
+                      className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
+                    >
+                      Update
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="py-4 text-gray-600 text-center">
+                  No inventory found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
-
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50">
-          <div className="bg-white/80 p-6 rounded-2xl w-96 pointer-events-auto shadow-xl border border-red-300 transform scale-95 transition-all duration-300">
+      {/* Update Inventory Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/30 z-50 p-2">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-sm shadow-xl border border-red-300 transform scale-95 transition-all duration-300">
             <h3 className="text-2xl font-semibold mb-2 text-red-600">
-              Enter used Units of <span className="font-bold">{selectedInventory?.bloodType}</span>
+              Enter used Units of{" "}
+              <span className="font-bold">{selectedInventory?.bloodType}</span>
             </h3>
 
             <p className="text-black mb-4">
-              Current Units for <span className="font-semibold">{selectedInventory?.bloodType}</span>: {selectedInventory?.currentUnits}
+              Current Units:{" "}
+              <span className="font-semibold">
+                {selectedInventory?.currentUnits}
+              </span>
             </p>
 
             <input
@@ -135,27 +196,35 @@ const Inventory = () => {
             <div className="flex justify-end space-x-2">
               <button
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                onClick={() => {
-                  setShowModal(false);
-                  setUsedUnits("");
-                }}
+                onClick={() => setShowUpdateModal(false)}
               >
                 Cancel
               </button>
               <button
                 className="px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800"
-                onClick={handleModalSubmit}
+                onClick={handleUpdateSubmit}
               >
                 Update
               </button>
             </div>
           </div>
         </div>
-
       )}
 
-
-    </>
+      {/* Add Inventory Modal */}
+      {showAddModal && (
+        <InventoryModal
+          isOpen={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          formData={formData}
+          setFormData={setFormData}
+          onSubmit={handleAddSubmit}
+          loading={loading}
+          editInventory={false}
+          bloodGroups={bloodGroups}
+        />
+      )}
+    </div>
   );
 };
 

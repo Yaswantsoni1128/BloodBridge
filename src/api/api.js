@@ -136,3 +136,47 @@ export const deleteDonor = async (id) => {
     throw error;
   }
 };
+
+//Fetch all alerts for the current hospital
+export const fetchAlerts = async () => {
+  try {
+    const response = await axiosInstance.get("/alert/hospital");
+    console.log("Fetch Alerts response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Resolve an alert by ID
+export const resolveAlert = async (id) => {
+  try {
+    const response = await axiosInstance.put(`/alert/resolve/${id}`);
+    console.log("Resolve Alert response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Delete an alert by ID
+export const deleteAlert = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/alert/${id}`);
+    console.log("Delete Alert response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Create a new Alert
+export const createAlert = async (alertData) => {
+  try {
+    const response = await axiosInstance.post("/alert", alertData);
+    console.log("Create Alert response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

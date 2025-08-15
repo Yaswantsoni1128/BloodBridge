@@ -5,6 +5,7 @@ const BASE_URL = import.meta.env.VITE_API_URL
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   headers: {},
+  withCredentials: true,
 });
 
 axiosInstance.interceptors.request.use(
@@ -36,6 +37,16 @@ export const loginUser = async (credentials) => {
     const response = await axiosInstance.post("/user/login", credentials);
     console.log("baseurl",BASE_URL)
     console.log("Login response:", response.data);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    const response = await axiosInstance.post("/user/logout");
+    console.log("Logout response:", response.data);
     return response;
   } catch (error) {
     throw error;
@@ -74,13 +85,26 @@ export const fetchDonors = async () => {
 
 
 // ✅ Fetch hospital inventory
+// export const fetchHospitalInventory = async () => {
+//   const token = localStorage.getItem("token"); // get JWT
+//   return await axios.get(`${BASE_URL}/inventory/getHospitalInventory`, {
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//     },
+//   });
+// };
 export const fetchHospitalInventory = async () => {
-  const token = localStorage.getItem("token"); // get JWT
-  return await axios.get(`${BASE_URL}/inventory/getHospitalInventory`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+  try {
+    const userString = localStorage.getItem("user");
+    const user = JSON.parse(userString);
+    console.log(user)
+    const id = user._id;
+    console.log(`/inventory/getHospitalInventory/${id}`)
+    const response = await axiosInstance.get(`/inventory/getHospitalInventory/${id}`);
+    return response;
+  } catch (error) {
+    throw error;
+  }
 };
 
 // ✅ Update inventory units
@@ -131,6 +155,16 @@ export const deleteDonor = async (id) => {
   try {
     const response = await axiosInstance.delete(`/donor/deleteDonor/${id}`);
     console.log("Delete Donor response:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const createInventory = async (inventoryData) => {
+  try {
+    const response = await axiosInstance.post("/inventory/createInventory", inventoryData);
+    console.log("Inventory added successfully:", response);
     return response;
   } catch (error) {
     throw error;

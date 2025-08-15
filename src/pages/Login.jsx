@@ -23,6 +23,7 @@ const Login = () => {
         console.log("role:", role);
         localStorage.setItem("token",res.data.accessToken)
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        localStorage.setItem("refreshToken",res.data.refreshToken);
       if (role === "hospital") {
         navigate("/hospital/dashboard");
       } else if (role === "BloodBank") {

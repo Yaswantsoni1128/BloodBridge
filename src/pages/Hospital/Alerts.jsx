@@ -5,10 +5,10 @@ import {
   deleteAlert,
   createAlert 
 } from "../../api/api.js";
-import AlertTable from "../../components/hospital/AlertTable.jsx";
-import AlertViewModal from "../../components/hospital/AlertViewModal.jsx";
-import AlertFilterBar from "../../components/hospital/AlertFilterBar.jsx";
-import CreateAlertModal from "../../components/hospital/CreateAlertModal.jsx";
+import AlertTable from "../../components/Hospital/AlertTable.jsx";
+import AlertViewModal from "../../components/Hospital/AlertViewModal.jsx";
+import AlertFilterBar from "../../components/Hospital/AlertFilterBar.jsx";
+import CreateAlertModal from "../../components/Hospital/CreateAlertModal.jsx";
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);

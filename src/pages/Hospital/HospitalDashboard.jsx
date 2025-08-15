@@ -1,10 +1,10 @@
 // src/pages/hospital/HospitalDashboard.jsx
 import React, { useEffect, useState } from "react";
 import { FiBell, FiUser } from "react-icons/fi";
-import BloodStats from "../../components/hospital/BloodStats";
-import RecentDonors from "../../components/hospital/RecentDonors";
-import CurrentStockCard from "../../components/hospital/CurrentStockCard";
-import UserProfilePopup from "../../components/hospital/UserProfilePopup";
+import BloodStats from "../../components/Hospital/BloodStats";
+import RecentDonors from "../../components/Hospital/RecentDonors";
+import CurrentStockCard from "../../components/Hospital/CurrentStockCard";
+import UserProfilePopup from "../../components/Hospital/UserProfilePopup";
 import { fetchRecentDonors } from "../../api/api";
 import { useNavigate } from "react-router-dom";
 

@@ -6,10 +6,10 @@ import {
   updateDonor,
   deleteDonor,
 } from "../../api/api";
-import DonorSearchBar from "../../components/Hospital/DonorSearchBar.js";
-import DonorTable from "../../components/Hospital/DonorTable.js";
-import DonorModal from "../../components/Hospital/DonorModal.js";
-import DonorViewModal from "../../components/Hospital/DonorViewModal.js";
+// import DonorSearchBar from "../../components/Hospital/DonorSearchBar.jsx";
+// import DonorTable from "../../components/Hospital/DonorTable.jsx";
+// import DonorModal from "../../components/Hospital/DonorModal.jsx";
+// import DonorViewModal from "../../components/Hospital/DonorViewModal.jsx";
 
 const Donors = () => {
   const [donors, setDonors] = useState([]);

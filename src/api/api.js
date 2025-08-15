@@ -72,6 +72,31 @@ export const fetchDonors = async () => {
   }
 };
 
+
+// ✅ Fetch hospital inventory
+export const fetchHospitalInventory = async () => {
+  const token = localStorage.getItem("token"); // get JWT
+  return await axios.get(`${BASE_URL}/inventory/getHospitalInventory`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+// ✅ Update inventory units
+export const updateInventoryUnits = async (id, bloodType, newUnits) => {
+  const token = localStorage.getItem("token");
+  return await axios.put(
+    `${BASE_URL}/inventory/updateInventory/${id}`,
+    { bloodType: bloodType, unitsAvailable: newUnits }, // both required
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+};
+
 export const addDonor = async (donorData) => {
   try {
     const response = await axiosInstance.post("/donor/addDonor", donorData);

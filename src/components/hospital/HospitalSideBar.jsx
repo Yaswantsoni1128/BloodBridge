@@ -36,7 +36,7 @@ const HospitalSideBar = () => {
           >
             {item.icon}
             {/* Tooltip on Hover */}
-            <span className="absolute left-14 whitespace-nowrap bg-red-600 text-white px-3 py-1 rounded-lg shadow-lg text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <span className="absolute left-14 whitespace-nowrap bg-red-600 text-white px-3 py-1 rounded-lg shadow-lg text-sm flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50">
               {item.label}
               <span className="text-lg">›</span>
             </span>

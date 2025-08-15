@@ -42,3 +42,32 @@ export const loginUser = async (credentials) => {
   }
 };
 
+export const fetchRecentDonors = async () => {
+  try {
+    const response = await axiosInstance.get("/donor/recent");
+    console.log("Recent Donors in api.js:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchUserProfile = async () => {
+  try {
+    const response = await axiosInstance.get("/user/me");
+    console.log("User Data in api.js:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const fetchDonors = async () => {
+  try {
+    const response = await axiosInstance.get("/donor/getAllDonors");
+    console.log("Donors Data in api.js:", response);
+    return response;
+  } catch (error) {
+    throw error;
+  }
+};

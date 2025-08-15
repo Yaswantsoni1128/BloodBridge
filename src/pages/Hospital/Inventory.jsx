@@ -4,7 +4,7 @@ import {
   updateInventoryUnits,
   createInventory,
 } from "../../api/api.js";
-import InventoryModal from "../../components/Hospital/InventoryModal.jsx";
+import InventoryModal from "../../components/hospital/InventoryModal.jsx";
 
 const Inventory = () => {
   const [inventory, setInventory] = useState([]);

@@ -1,6 +1,6 @@
 // src/layouts/HospitalLayout.jsx
 import React from "react";
-import HospitalSideBar from "../../components/Hospital/HospitalSideBar.jsx";
+import HospitalSideBar from "../../components/hospital/HospitalSideBar.jsx";
 import { Outlet } from "react-router-dom";
 
 const HospitalLayout = () => {

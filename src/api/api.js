@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = process.env.REACT_APP_API_URL;
+const BASE_URL = import.meta.env.VITE_API_URL
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -20,3 +20,24 @@ axiosInstance.interceptors.request.use(
   }
 );
 
+export const registerUser = async (userData) => {
+  try {
+
+    console.log("baseurl",BASE_URL)
+    const response = await axiosInstance.post("/user/register", userData);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const loginUser = async (credentials) => {
+  try {
+    const response = await axiosInstance.post("/user/login", credentials);
+    console.log("baseurl",BASE_URL)
+    console.log("Login response:", response.data);
+    return response.data;
+  } catch (error) {
+    throw error;
+  }
+};

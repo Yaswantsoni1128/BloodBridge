@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../api/api.js";
+import StarAnimation from "../utils/StarAnimation.jsx";
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -7,31 +10,41 @@ const Register = () => {
     password: "",
     phone: "",
   });
-
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    // Add API call here if needed
+    setLoading(true);
+
+    try {
+      await registerUser(form);
+      navigate("/login");
+    } catch (error) {
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#ffeaea] via-[#fff] to-[#fbe6e6] px-4">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden bg-black">
+      <StarAnimation />
+
       <form
         onSubmit={handleSubmit}
-        className="bg-white/90 backdrop-blur-md px-8 py-4 rounded-2xl shadow-lg w-full max-w-md border border-[#e53935]/20 
-                   transform transition-all duration-500 hover:shadow-2xl animate-fadeIn"
+        className="relative z-10 bg-white shadow-xl border border-[#f3dcdc] rounded-3xl px-8 py-2 w-full max-w-md
+                   transition-transform duration-300 hover:scale-[1.01] backdrop-blur-md bg-opacity-95"
       >
-        {/* Header */}
-        <div className="flex items-center justify-center mb-8">
-          <span className="bg-gradient-to-tr from-[#e53935] to-[#ff6b6b] rounded-full w-14 h-14 flex items-center justify-center mr-3 shadow-lg">
-            <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+        <div className="flex flex-col items-center mb-2">
+          <div className="bg-gradient-to-tr from-[#e53935] to-[#ff6b6b] rounded-full w-14 h-14 flex items-center justify-center shadow-md">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
               <path
                 fill="#fff"
                 d="M12 2C6.48 2 2 6.48 2 12s4.48 
@@ -42,86 +55,78 @@ const Register = () => {
                    1.94-3.5 3.22-6 3.22z"
               />
             </svg>
-          </span>
-          <h2 className="font-extrabold text-3xl text-[#e53935]">Register</h2>
+          </div>
+          <h2 className="text-2xl font-bold text-[#e53935] mt-3">Register</h2>
+          <p className="text-gray-500 mt-1 text-xs">
+            Create your account to get started
+          </p>
         </div>
 
-        {/* Form Fields */}
-        <div className="flex flex-col gap-4">
-          {["name", "email", "password", "phone"].map((field) => (
-            <div key={field}>
-              <label
-                htmlFor={field}
-                className="block mb-1 font-medium text-gray-700 capitalize"
-              >
-                {field}
-              </label>
-              <input
-                type={
-                  field === "email"
-                    ? "email"
-                    : field === "password"
-                    ? "password"
-                    : field === "phone"
-                    ? "tel"
-                    : "text"
-                }
-                id={field}
-                name={field}
-                value={form[field]}
-                onChange={handleChange}
-                required
-                autoComplete={
-                  field === "name"
-                    ? "name"
-                    : field === "email"
-                    ? "email"
-                    : field === "password"
-                    ? "new-password"
-                    : "tel"
-                }
-                className="w-full px-4 py-2 rounded-lg border border-gray-200 
-                           focus:outline-none focus:border-[#e53935] focus:ring-2 
-                           focus:ring-[#e53935]/40 text-base transition-all duration-300"
-              />
-            </div>
-          ))}
-        </div>
+        {["name", "email", "password", "phone"].map((field) => (
+          <div key={field} className="mb-4">
+            <label
+              htmlFor={field}
+              className="block mb-1 text-gray-700 text-sm font-medium capitalize"
+            >
+              {field}
+            </label>
+            <input
+              type={
+                field === "email"
+                  ? "email"
+                  : field === "password"
+                  ? "password"
+                  : field === "phone"
+                  ? "tel"
+                  : "text"
+              }
+              id={field}
+              name={field}
+              value={form[field]}
+              onChange={handleChange}
+              required
+              placeholder={
+                field === "name"
+                  ? "John Doe"
+                  : field === "email"
+                  ? "you@example.com"
+                  : field === "password"
+                  ? "••••••••"
+                  : "9876543210"
+              }
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-gray-50
+                         focus:outline-none focus:border-[#e53935] focus:ring-2 
+                         focus:ring-[#e53935]/30 text-sm transition-all duration-200"
+            />
+          </div>
+        ))}
 
-        {/* Submit Button */}
         <button
           type="submit"
-          className="w-full py-3 bg-gradient-to-r from-[#e53935] to-[#ff6b6b] 
-                     text-white rounded-lg font-bold text-lg shadow-md mt-6
-                     transform transition-all duration-300 hover:scale-[1.02] hover:shadow-xl active:scale-95"
+          disabled={loading}
+          className="w-full py-2.5 bg-gradient-to-r from-[#e53935] to-[#ff6b6b] 
+                     text-white rounded-lg font-semibold text-sm shadow-md 
+                     hover:shadow-lg hover:scale-[1.02] active:scale-95 transition-all duration-200"
         >
-          Register
+          {loading ? "Registering..." : "Register"}
         </button>
 
-        {/* Success Message */}
-        {submitted && (
-          <div className="mt-6 text-[#e53935] text-center font-semibold animate-fadeIn">
-            🎉 Registration submitted successfully!
-          </div>
-        )}
+        <p className="text-center text-xs text-gray-500 mt-4">
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            className="text-[#e53935] cursor-pointer hover:underline"
+          >
+            Login
+          </span>
+        </p>
       </form>
 
-      {/* Animation Styles */}
-      <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(15px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.6s ease-out forwards;
-        }
-      `}</style>
+      {loading && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+          <div className="w-10 h-10 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
     </div>
   );
 };

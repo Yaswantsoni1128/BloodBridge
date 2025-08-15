@@ -21,6 +21,8 @@ const Login = () => {
       const role = res?.data?.user?.role || "user";
         console.log("Login response:", res.data);
         console.log("role:", role);
+        localStorage.setItem("token",res.data.accessToken)
+        localStorage.setItem("user", JSON.stringify(res.data.user));
       if (role === "hospital") {
         navigate("/hospital-dashboard");
       } else if (role === "BloodBank") {

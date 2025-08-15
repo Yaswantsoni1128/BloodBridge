@@ -25,7 +25,7 @@ export const registerUser = async (userData) => {
 
     console.log("baseurl",BASE_URL)
     const response = await axiosInstance.post("/user/register", userData);
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }
@@ -36,7 +36,7 @@ export const loginUser = async (credentials) => {
     const response = await axiosInstance.post("/user/login", credentials);
     console.log("baseurl",BASE_URL)
     console.log("Login response:", response.data);
-    return response.data;
+    return response;
   } catch (error) {
     throw error;
   }

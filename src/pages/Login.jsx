@@ -18,8 +18,9 @@ const Login = () => {
     setLoading(true);
     try {
       const res = await loginUser(form);
-      const role = res?.data?.role || "user";
-
+      const role = res?.data?.user?.role || "user";
+        console.log("Login response:", res.data);
+        console.log("role:", role);
       if (role === "hospital") {
         navigate("/hospital-dashboard");
       } else if (role === "BloodBank") {
